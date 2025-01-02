@@ -112,15 +112,23 @@ int main()
     DiffDriveRobot robot{{400, 400}};
     robot.draw(img);
 
+    const int dt_ms = 10;
+    const int ESC_KEY = 27;
     for (int i = 0; i < 1000; ++i)
     {
         draw_background();
 
-        robot.move(10.0, 0.1, 0.1);
+        robot.move(10.0, 0.1, static_cast<double>(dt_ms / 1000.0));
         robot.draw(img);
 
         cv::imshow("Robot", img);
         cv::waitKey(10);
+
+        const int key = cv::waitKey(dt_ms);
+
+        if (key == ESC_KEY) {
+            break;
+        }
     }
 
     return EXIT_SUCCESS;
