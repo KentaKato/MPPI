@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 23)
 
 find_package(yaml-cpp REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+
 
 include_directories(
   include
@@ -20,6 +22,7 @@ add_library(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   ${YAML_CPP_LIBRARIES}
   ${OpenCV_LIBRARIES}
+  Eigen3::Eigen
 )
 
 add_executable(main
