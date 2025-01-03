@@ -16,6 +16,8 @@ include_directories(
 )
 
 add_library(${PROJECT_NAME}
+  src/cost_map.cpp
+  src/obstacles.cpp
   src/main.cpp
 )
 
