@@ -33,4 +33,11 @@ target_link_libraries(main
   ${PROJECT_NAME}
 )
 
+add_executable(cost_map
+  src/cost_map.cpp
+)
+
+target_link_libraries(cost_map
+  ${PROJECT_NAME}
+)
 

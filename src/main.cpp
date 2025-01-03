@@ -5,7 +5,6 @@
 #include <Eigen/Dense>
 #include <random>
 
-
 struct Rectangle {
     Rectangle(
         const std::array<double, 2> &center,
@@ -47,6 +46,23 @@ struct Rectangle {
     std::vector<cv::Point> vertices_;
 
 };
+
+struct Circle {
+    Circle(
+        const std::array<double, 2> &center,
+        const double radius)
+        : center_(center), radius_(radius)
+    {}
+
+    void draw(cv::Mat& image, const cv::Scalar& color = cv::Scalar(100, 100, 100)) const
+    {
+        cv::circle(image, cv::Point(center_[0], center_[1]), cvRound(radius_), color, cv::FILLED, cv::LINE_AA);
+    }
+
+    std::array<double, 2> center_;
+    double radius_;
+};
+
 
 class DiffDriveRobot {
 public:
@@ -207,13 +223,20 @@ int main()
     const int image_height = 800;
     cv::Mat img = cv::Mat(image_height, image_width, CV_8UC3, white);
 
-    std::vector<Rectangle> obstacles;
-    obstacles.emplace_back(std::array<double, 2>{200., 400.}, 200., 100., 45.);
-    obstacles.emplace_back(std::array<double, 2>{600., 600.}, 30., 100., -20.);
+    std::vector<Rectangle> rectangles;
+    rectangles.emplace_back(std::array<double, 2>{200., 400.}, 200., 100., 45.);
+    rectangles.emplace_back(std::array<double, 2>{600., 600.}, 30., 100., -20.);
 
-    auto draw_background = [&img, &white, &obstacles](){
+    std::vector<Circle> circles;
+    circles.emplace_back(std::array<double, 2>{400., 200.}, 50.);
+    circles.emplace_back(std::array<double, 2>{600., 250.}, 80.);
+
+    auto draw_background = [&img, &white, &rectangles, &circles](){
         img.setTo(white);
-        for (const auto& obstacle : obstacles) {
+        for (const auto& obstacle : rectangles) {
+            obstacle.draw(img);
+        }
+        for (const auto& obstacle : circles) {
             obstacle.draw(img);
         }
     };
@@ -224,9 +247,9 @@ int main()
     robot.draw(img);
 
 
+    const int ESC_KEY = 27;
 #if 0
     const int dt_ms = 10;
-    const int ESC_KEY = 27;
     for (int i = 0; i < 1000; ++i)
     {
         draw_background();
@@ -244,14 +267,17 @@ int main()
         }
     }
 #else
+
     MPPIController controller{Eigen::Vector3d{init_robot_pos[0], init_robot_pos[1], init_robot_theta}, 100, 100};
     for (int i = 0; i < 100; ++i)
     {
         draw_background();
         controller.control(img);
         cv::imshow("Robot", img);
-        std::cout << "Press any key to continue..." << std::endl;
-        cv::waitKey(0);
+        const int key = cv::waitKey(0);
+        if (key == ESC_KEY) {
+            break;
+        }
     }
 #endif
 
