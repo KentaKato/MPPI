@@ -135,9 +135,7 @@ public:
         }
 
         const double eta = weights.sum();
-        std::cout << "weights before: " << weights << std::endl;
         weights /= eta;
-        std::cout << "weights: " << weights << std::endl;
 
         Eigen::MatrixXd new_inputs = Eigen::MatrixXd::Zero(2, horizon_length_);
         for (size_t i = 0; i < num_samples_; ++i) {
@@ -147,7 +145,6 @@ public:
         const auto next_states = simulate(new_inputs, dt_);
         draw_states(next_states, image, cv::Scalar{0, 0, 200});
         const auto first_input = new_inputs.col(0);
-        std::cout <<"new_inputs: " << new_inputs << std::endl;
         return first_input;
     }
 
@@ -162,7 +159,7 @@ private:
 
     // constants
     const double gamma_ = 1.0;
-    const double temperature_ = 200.0;
+    const double temperature_ = 1.0;
 
     const size_t horizon_length_;
     const size_t num_samples_;
@@ -174,19 +171,12 @@ private:
 
     void init_members() {
         noise_cov_ = Eigen::Matrix2d::Identity();
-        noise_cov_(0, 0) = 1;
+        noise_cov_(0, 0) = 0.5;
         noise_cov_(1, 1) = 0.1;
         noise_cov_inv_ = noise_cov_.inverse();
-        std::cout << "noise cov: " << noise_cov_ << std::endl;
 
         const auto zero_inputs = Eigen::MatrixXd::Zero(2, horizon_length_);
-
-        // TODO:ここなんかおかしい
         last_inputs_ = zero_inputs;
-        for (int i = 0; i < horizon_length_; ++i) {
-            last_inputs_.col(i)(0) = ref_vel_;
-        }
-
         nominal_inputs_ = zero_inputs;
 
         goal_ << 600.0, 600.0;
@@ -320,16 +310,15 @@ int main()
     }
 #else
 
-    MPPIController controller{50, 100};
+    MPPIController controller{50, 500};
     for (int i = 0; i < 1000; ++i)
     {
-        std::cout << "-------------------" << std::endl;
         draw_background();
         const auto next_input = controller.control(img, robot.get_state());
         robot.move(next_input(0), next_input(1), 0.1);
         robot.draw(img);
         cv::imshow("Robot", img);
-        const int key = cv::waitKey(0);
+        const int key = cv::waitKey(10);
         if (key == ESC_KEY) {
             break;
         }
